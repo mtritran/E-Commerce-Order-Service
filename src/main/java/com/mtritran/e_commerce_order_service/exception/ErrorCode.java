@@ -1,4 +1,4 @@
-package com.example.userCRUD.exception;
+package com.mtritran.e_commerce_order_service.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

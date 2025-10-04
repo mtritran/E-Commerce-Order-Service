@@ -33,4 +33,22 @@ public class OrderController {
                 .result(orderService.viewCart())
                 .build();
     }
+
+    @DeleteMapping("/cart/remove/{productName}")
+    public ApiResponse<CartResponse> removeFromCart(@PathVariable String productName) {
+        return ApiResponse.<CartResponse>builder()
+                .code(200)
+                .message("Product removed from cart successfully")
+                .result(orderService.removeFromCart(productName))
+                .build();
+    }
+
+    @PutMapping("/cart/update")
+    public ApiResponse<CartResponse> updateQuantity(@RequestBody AddToCartRequest request) {
+        return ApiResponse.<CartResponse>builder()
+                .code(200)
+                .message("Cart updated successfully")
+                .result(orderService.updateQuantity(request.getProductName(), request.getQuantity()))
+                .build();
+    }
 }

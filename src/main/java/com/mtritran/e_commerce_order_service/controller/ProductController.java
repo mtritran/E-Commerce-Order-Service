@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,12 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Tag(name = "Product", description = "APIs for managing products")
+@EnableMethodSecurity(prePostEnabled = true)
 public class ProductController {
 
     ProductService productService;
 
     @PostMapping
     @Operation(summary = "Create a new product")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> create(@RequestBody ProductRequest request) {
         return ApiResponse.<ProductResponse>builder()
                 .code(200)
@@ -34,6 +38,7 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Get all products")
+    @PreAuthorize("permitAll()")
     public ApiResponse<List<ProductResponse>> getAll() {
         return ApiResponse.<List<ProductResponse>>builder()
                 .code(200)
@@ -44,6 +49,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get product by ID")
+    @PreAuthorize("permitAll()")
     public ApiResponse<ProductResponse> getById(@PathVariable String id) {
         return ApiResponse.<ProductResponse>builder()
                 .code(200)
@@ -54,6 +60,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update product by ID")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> update(@PathVariable String id,
                                                @RequestBody ProductRequest request) {
         return ApiResponse.<ProductResponse>builder()
@@ -65,6 +72,7 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete product by ID")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable String id) {
         productService.delete(id);
         return ApiResponse.<Void>builder()

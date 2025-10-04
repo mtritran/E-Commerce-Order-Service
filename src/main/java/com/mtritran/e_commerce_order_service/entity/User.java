@@ -29,4 +29,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<Order> orders;
 }

@@ -19,7 +19,9 @@ public enum ErrorCode {
     ROLE_NOT_EXISTED(1011, "Role not exists", HttpStatus.BAD_REQUEST),
     DOB_INVALID(1012, "User must be at least 18 years old", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND(1013, "Product not found", HttpStatus.NOT_FOUND),
-    PRODUCT_EXISTED(1014, "Product already exists", HttpStatus.BAD_REQUEST)
+    PRODUCT_EXISTED(1014, "Product already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_EXISTED(2001, "Product not found", HttpStatus.NOT_FOUND),
+    CART_EMPTY(2002, "Cart is empty", HttpStatus.BAD_REQUEST)
     ;
 
 

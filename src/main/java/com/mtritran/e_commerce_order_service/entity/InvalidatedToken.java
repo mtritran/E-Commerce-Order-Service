@@ -8,7 +8,8 @@ import lombok.experimental.FieldDefaults;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

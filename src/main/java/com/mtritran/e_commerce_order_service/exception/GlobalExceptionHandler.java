@@ -16,29 +16,41 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse> handlingUndefineException(Exception e) {
+        // log full stacktrace
+        log.error("Unexpected Exception: ", e);
+
         ErrorCode errorCode = ErrorCode.UNDEFINED_EXCEPTION;
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setMessage(e.getMessage()); // show chi tiết thay vì chung chung
+
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse> handlingAppException(AppException e) {
+        // log error + stacktrace
+        log.error("AppException with errorCode {}: {}", e.getErrorCode(), e.getMessage(), e);
+
         ErrorCode errorCode = e.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
+
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingValidException(MethodArgumentNotValidException e) {
+        log.warn("Validation failed: {}", e.getMessage(), e);
+
         String enumKey = e.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
         try {
             errorCode = ErrorCode.valueOf(enumKey);
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {
+            log.warn("Invalid enum key in validation: {}", enumKey);
+        }
 
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
@@ -49,6 +61,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException e) {
+        log.warn("Access denied: {}", e.getMessage(), e);
+
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
@@ -59,7 +73,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     ResponseEntity<ApiResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException e) {
         // log chi tiết để dev debug
-        log.error("Data integrity violation", e);
+        log.error("Data integrity violation: {}", e.getMessage(), e);
 
         ErrorCode errorCode = ErrorCode.UNDEFINED_EXCEPTION;
         ApiResponse apiResponse = new ApiResponse();
@@ -71,4 +85,3 @@ public class GlobalExceptionHandler {
                 .body(apiResponse);
     }
 }
-

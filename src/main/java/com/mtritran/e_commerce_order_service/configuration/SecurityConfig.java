@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers("/orders/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users").hasRole(RoleEnum.ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/permissions/**").hasRole(RoleEnum.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/permissions").hasRole(RoleEnum.ADMIN.name())

@@ -100,6 +100,49 @@ public class OrderService {
                 .totalPrice(totalPrice)
                 .build();
     }
+
+    public CartResponse removeFromCart(String productName) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Order cart = orderRepository.findByUserAndStatus(user, "CART")
+                .orElseThrow(() -> new AppException(ErrorCode.CART_EMPTY));
+
+        boolean removed = cart.getItems().removeIf(item ->
+                item.getProduct().getName().equalsIgnoreCase(productName));
+
+        if (!removed) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+        orderRepository.save(cart);
+        return mapToCartResponse(cart);
+    }
+
+    public CartResponse updateQuantity(String productName, Integer quantity) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Order cart = orderRepository.findByUserAndStatus(user, "CART")
+                .orElseThrow(() -> new AppException(ErrorCode.CART_EMPTY));
+
+        OrderItem item = cart.getItems().stream()
+                .filter(i -> i.getProduct().getName().equalsIgnoreCase(productName))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        if (quantity <= 0) {
+            // nếu số lượng <= 0 thì coi như remove luôn
+            cart.getItems().remove(item);
+        } else {
+            item.setQuantity(quantity);
+        }
+
+        orderRepository.save(cart);
+        return mapToCartResponse(cart);
+    }
 }
 
 

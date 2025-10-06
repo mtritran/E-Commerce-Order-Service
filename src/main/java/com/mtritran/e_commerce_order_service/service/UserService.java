@@ -84,6 +84,22 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    public UserResponse updateMyInfo(UserUpdateRequest request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        userMapper.updateUser(user, request);
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // user thường không được đổi role, nên mình không set roles ở đây
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {
             throw new AppException(ErrorCode.UNDEFINED_EXCEPTION);

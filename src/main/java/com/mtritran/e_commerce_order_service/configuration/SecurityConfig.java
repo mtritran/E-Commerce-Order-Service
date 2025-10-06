@@ -50,11 +50,6 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers("/orders/**").hasRole(RoleEnum.USER.name())
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole(RoleEnum.ADMIN.name())
-                        .requestMatchers(HttpMethod.GET, "/permissions/**").hasRole(RoleEnum.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/permissions").hasRole(RoleEnum.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/permissions/**").hasRole(RoleEnum.ADMIN.name())
                         .anyRequest().authenticated()
         );
 

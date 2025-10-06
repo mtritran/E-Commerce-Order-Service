@@ -51,4 +51,13 @@ public class OrderController {
                 .result(orderService.updateQuantity(request.getProductName(), request.getQuantity()))
                 .build();
     }
+
+    @PostMapping("/checkout")
+    public ApiResponse<CartResponse> checkout() {
+        return ApiResponse.<CartResponse>builder()
+                .code(200)
+                .message("Checkout successfully, order placed")
+                .result(orderService.checkout())
+                .build();
+    }
 }

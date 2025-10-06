@@ -7,6 +7,7 @@ import com.mtritran.e_commerce_order_service.service.PermissionService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class PermissionController {
     PermissionService permissionService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<PermissionResponse> createPermission(@RequestBody PermissionRequest request) {
         var result = permissionService.createPermission(request);
         return ApiResponse.<PermissionResponse>builder()
@@ -29,6 +31,7 @@ public class PermissionController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<PermissionResponse>> getAllPermissions() {
         var result = permissionService.getAll();
         return ApiResponse.<List<PermissionResponse>>builder()
@@ -39,6 +42,7 @@ public class PermissionController {
     }
 
     @DeleteMapping("/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     ApiResponse<Void> deletePermission(@PathVariable String name) {
         permissionService.delete(name);
         return ApiResponse.<Void>builder()

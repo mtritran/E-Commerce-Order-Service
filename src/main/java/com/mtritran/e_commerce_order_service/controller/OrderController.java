@@ -7,6 +7,7 @@ import com.mtritran.e_commerce_order_service.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,7 @@ public class OrderController {
     OrderService orderService;
 
     @PostMapping("/cart/add")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<CartResponse> addToCart(@RequestBody AddToCartRequest request) {
         return ApiResponse.<CartResponse>builder()
                 .code(200)
@@ -26,6 +28,7 @@ public class OrderController {
     }
 
     @GetMapping("/cart")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<CartResponse> viewCart() {
         return ApiResponse.<CartResponse>builder()
                 .code(200)
@@ -35,6 +38,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/cart/remove/{productName}")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<CartResponse> removeFromCart(@PathVariable String productName) {
         return ApiResponse.<CartResponse>builder()
                 .code(200)
@@ -44,6 +48,7 @@ public class OrderController {
     }
 
     @PutMapping("/cart/update")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<CartResponse> updateQuantity(@RequestBody AddToCartRequest request) {
         return ApiResponse.<CartResponse>builder()
                 .code(200)
@@ -53,6 +58,7 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<CartResponse> checkout() {
         return ApiResponse.<CartResponse>builder()
                 .code(200)

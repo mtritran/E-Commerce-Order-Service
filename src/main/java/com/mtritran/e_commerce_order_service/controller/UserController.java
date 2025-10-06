@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponse>> getAllUsers() {
         ApiResponse<List<UserResponse>> response = new ApiResponse<>();
         response.setCode(200);
@@ -39,6 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> getUser(@PathVariable String id) {
         ApiResponse<UserResponse> response = new ApiResponse<>();
         response.setCode(200);
@@ -48,6 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/myInfo")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ApiResponse<UserResponse> getMyInfo() {
         ApiResponse<UserResponse> response = new ApiResponse<>();
         response.setCode(200);
@@ -57,6 +61,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> updateUser(@PathVariable String id, @RequestBody UserUpdateRequest request) {
         ApiResponse<UserResponse> response = new ApiResponse<>();
         response.setCode(200);
@@ -65,7 +70,18 @@ public class UserController {
         return response;
     }
 
+    @PutMapping("/myInfo")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ApiResponse<UserResponse> updateMyInfo(@RequestBody UserUpdateRequest request) {
+        ApiResponse<UserResponse> response = new ApiResponse<>();
+        response.setCode(200);
+        response.setMessage("My info updated successfully");
+        response.setResult(userService.updateMyInfo(request));
+        return response;
+    }
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         ApiResponse<Void> response = new ApiResponse<>();

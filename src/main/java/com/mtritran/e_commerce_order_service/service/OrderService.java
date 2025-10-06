@@ -32,16 +32,13 @@ public class OrderService {
     UserRepository userRepository;
 
     public CartResponse addToCart(AddToCartRequest request) {
-        // Lấy user hiện tại từ context
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // Lấy product theo tên
         Product product = productRepository.findByName(request.getProductName())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-        // Lấy giỏ hàng (status = CART) hoặc tạo mới
         Order cart = orderRepository.findByUserAndStatus(user, "CART")
                 .orElse(Order.builder()
                         .user(user)
@@ -50,14 +47,21 @@ public class OrderService {
                         .items(new HashSet<>())
                         .build());
 
-        // Kiểm tra sản phẩm đã có trong giỏ
         Optional<OrderItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(product.getId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
+            // nếu tăng thêm thì check stock trước
+            if (product.getStock() < request.getQuantity()) {
+                throw new AppException(ErrorCode.OUT_OF_STOCK);
+            }
             existingItem.get().setQuantity(existingItem.get().getQuantity() + request.getQuantity());
+            product.setStock(product.getStock() - request.getQuantity());
         } else {
+            if (product.getStock() < request.getQuantity()) {
+                throw new AppException(ErrorCode.OUT_OF_STOCK);
+            }
             OrderItem newItem = OrderItem.builder()
                     .order(cart)
                     .product(product)
@@ -65,11 +69,15 @@ public class OrderService {
                     .price(product.getPrice())
                     .build();
             cart.getItems().add(newItem);
+            product.setStock(product.getStock() - request.getQuantity());
         }
 
+        productRepository.save(product);
         orderRepository.save(cart);
+
         return mapToCartResponse(cart);
     }
+
 
     public CartResponse viewCart() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -109,14 +117,19 @@ public class OrderService {
         Order cart = orderRepository.findByUserAndStatus(user, "CART")
                 .orElseThrow(() -> new AppException(ErrorCode.CART_EMPTY));
 
-        boolean removed = cart.getItems().removeIf(item ->
-                item.getProduct().getName().equalsIgnoreCase(productName));
+        OrderItem item = cart.getItems().stream()
+                .filter(i -> i.getProduct().getName().equalsIgnoreCase(productName))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (!removed) {
-            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
-        }
+        // cộng lại stock khi remove
+        Product product = item.getProduct();
+        product.setStock(product.getStock() + item.getQuantity());
+        productRepository.save(product);
 
+        cart.getItems().remove(item);
         orderRepository.save(cart);
+
         return mapToCartResponse(cart);
     }
 
@@ -133,14 +146,52 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        Product product = item.getProduct();
+
         if (quantity <= 0) {
-            // nếu số lượng <= 0 thì coi như remove luôn
+            // remove luôn nếu số lượng <= 0
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
             cart.getItems().remove(item);
         } else {
-            item.setQuantity(quantity);
+            int diff = quantity - item.getQuantity();
+
+            if (diff > 0) { // tăng số lượng
+                if (product.getStock() < diff) {
+                    throw new AppException(ErrorCode.OUT_OF_STOCK);
+                }
+                item.setQuantity(quantity);
+                product.setStock(product.getStock() - diff);
+            } else if (diff < 0) { // giảm số lượng
+                item.setQuantity(quantity);
+                product.setStock(product.getStock() + Math.abs(diff));
+            }
+            productRepository.save(product);
         }
 
         orderRepository.save(cart);
+        return mapToCartResponse(cart);
+    }
+
+    public CartResponse checkout() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Order cart = orderRepository.findByUserAndStatus(user, "CART")
+                .orElseThrow(() -> new AppException(ErrorCode.CART_EMPTY));
+
+        if (cart.getItems().isEmpty()) {
+            throw new AppException(ErrorCode.CART_EMPTY);
+        }
+
+        // đổi trạng thái sang ORDERED
+        cart.setStatus("ORDERED");
+        cart.setCreatedAt(LocalDateTime.now());
+
+        orderRepository.save(cart);
+
+        // trả về thông tin đơn hàng đã đặt
         return mapToCartResponse(cart);
     }
 }

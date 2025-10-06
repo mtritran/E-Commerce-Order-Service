@@ -36,3 +36,13 @@ springdoc:
 
 jwt:
   signerKey: "PP224JWPVK74T+sJANCMZSpFHjfuN3wRFBoe0jFJkHOM0S0944Fwvy+BrS/tVd0a"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: always
+

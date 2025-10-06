@@ -36,7 +36,6 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Get all products")
-    @PreAuthorize("permitAll()")
     public ApiResponse<List<ProductResponse>> getAll() {
         return ApiResponse.<List<ProductResponse>>builder()
                 .code(200)
